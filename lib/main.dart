@@ -22,14 +22,22 @@ class MyApp extends StatelessWidget {
             }
 
             var geojson = GeoJson();
-            geojson.processedLines.listen((GeoJsonLine line) {
-              // Handle processed lines here
-            });
+            List<Polygon> polygons = [];
             geojson.processedPolygons.listen((GeoJsonPolygon polygon) {
               // Handle processed polygons here
+              List<LatLng> points = polygon.polygons[0][0]
+                  .map((geoPoint) =>
+                      LatLng(geoPoint.latitude, geoPoint.longitude))
+                  .toList();
+
+              polygons.add(Polygon(
+                points: points,
+                color: Colors.blue.withOpacity(0.7),
+              ));
             });
+
             geojson.endSignal.listen((_) => geojson.dispose());
-            geojson.parse(snapshot.data, verbose: true);
+            geojson.parse(snapshot.data as String, verbose: true);
 
             return FlutterMap(
               options: MapOptions(
@@ -41,6 +49,9 @@ class MyApp extends StatelessWidget {
                     urlTemplate:
                         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                     subdomains: ['a', 'b', 'c']),
+                PolygonLayerOptions(
+                  polygons: polygons,
+                ),
                 MarkerLayerOptions(
                   markers: [
                     Marker(
